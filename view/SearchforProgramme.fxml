@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="169.0" prefWidth="299.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="HAI.view.SearchForProgrammeController">
+   <children>
+      <TextField fx:id="programmeCodeField" layoutX="49.0" layoutY="61.0" prefHeight="24.0" prefWidth="192.0" />
+      <Label layoutX="103.0" layoutY="14.0" text="Enter Programme Code" />
+      <Button fx:id="searchButton" layoutX="217.0" layoutY="108.0" mnemonicParsing="false" onAction="#handleSearch" text="Search" />
+   </children>
+</AnchorPane>

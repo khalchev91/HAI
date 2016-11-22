@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="HAI.view.StaffMenuController">
+   <children>
+      <MenuBar layoutY="-1.0" prefHeight="24.0" prefWidth="600.0">
+        <menus>
+            <Menu mnemonicParsing="false" text="File">
+              <items>
+                <MenuItem fx:id="logout" mnemonicParsing="false" onAction="#handleLogout" text="Logout" />
+              </items>
+            </Menu>
+          <Menu mnemonicParsing="false" text="Student">
+            <items>
+              <MenuItem fx:id="addStudent" mnemonicParsing="false" onAction="#handleAddStudent" text="Add Student" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Programme administration">
+            <items>
+              <MenuItem fx:id="createProgramme" mnemonicParsing="false" onAction="#handleNewProgramme" text="Create Programme" />
+                  <MenuItem fx:id="editProgramme" mnemonicParsing="false" onAction="#handleEditProgramme" text="Edit Programme" />
+                  <MenuItem fx:id="viewStudents" mnemonicParsing="false" onAction="#handleGenerateStudentList" text="Generate Student List" />
+                  <SeparatorMenuItem fx:id="separatorMenuItem" mnemonicParsing="false" />
+                  <MenuItem fx:id="createCourse" mnemonicParsing="false" onAction="#handleCreateCourse" text="Create Course" />
+            </items>
+          </Menu>
+        </menus>
+      </MenuBar>
+   </children>
+</AnchorPane>

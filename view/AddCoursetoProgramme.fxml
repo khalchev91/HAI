@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="HAI.view.AddCourseToProgrammeController">
+   <children>
+      <TableView fx:id="courseTableView" layoutX="78.0" layoutY="24.0" prefHeight="278.0" prefWidth="444.0">
+        <columns>
+          <TableColumn fx:id="courseColumn" prefWidth="185.0" text="Course Code">
+              <cellValueFactory><PropertyValueFactory property="courseCode" /></cellValueFactory>
+          </TableColumn>
+          <TableColumn fx:id="courseNameColumn" prefWidth="258.0" text="Course Name">
+              <cellValueFactory><PropertyValueFactory property="courseName" /></cellValueFactory>
+          </TableColumn>
+        </columns>
+      </TableView>
+      <Button fx:id="addToProgramme" layoutX="232.0" layoutY="331.0" mnemonicParsing="false" onAction="#handleAdd" text="Add Course" />
+   </children>
+</AnchorPane>
