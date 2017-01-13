@@ -11,6 +11,7 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.sql.*;
 import java.util.Scanner;
 
 /**
@@ -30,56 +31,50 @@ public class SearchForProgrammeController {
     @FXML
     public Programme handleSearch() {
         int code;
+        PreparedStatement statement= null;
+        Connection connection= null;
+
         Programme programme = new Programme();
-        int programmeCode, numberOfCourses;
-        String programmeName, award, accreditation;
+        try{
+            code= Integer.parseInt(programmeCodeField.getText());
+            try{
+                try{
+                    String host= "jdbc:sqlserver://KHALCHEV97;databaseName=HAI;integratedSecurity=true";
+                    Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+                    String search="IF EXISTS(SELECT *FROM programme"+" WHERE programmeCode = ?)"+"SELECT *FROM programme"+" WHERE programmeCode = ?"+" ELSE"+" SELECT NULL";
+                    connection= DriverManager.getConnection(host);
+                    statement= connection.prepareStatement(search);
+                    statement.setInt(1,code);
+                    statement.setInt(2,code);
+                    ResultSet resultSet= statement.executeQuery();
+                    while (resultSet.next()){
+                        programme.setProgrammeCode(resultSet.getInt("ProgrammeCode"));
+                        programme.setProgrammeName(resultSet.getString("programmeName"));
+                        programme.setMaxNumberOfCourses(resultSet.getInt("maximumNumberOfCourses"));
+                        programme.setAward(resultSet.getString("Award"));
+                        programme.setAccreditation(resultSet.getString("Accreditation"));
+                    }
 
-        try {
-            code = Integer.parseInt(programmeCodeField.getText());
-            RandomAccessFile search=null;
-            try {
-                    try{
-                search = new RandomAccessFile(new File("programme.hai"), "r");
-                search.seek((code - 1) * programme.sizeOfRecord());
-                programmeCode = search.readInt();
-                if (programmeCode == 1) {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Error");
-                    alert.setContentText("Record doesn't exist");
-                    alert.showAndWait();
-                } else {
-                    programmeName = search.readUTF();
-                    numberOfCourses = search.readInt();
-                    award = search.readUTF();
-                    accreditation = search.readUTF();
-
-                    programme = new Programme(programmeCode, programmeName, numberOfCourses, award, accreditation);
-                    searchProgramme.close();
-                    search.close();
-                    return programme;
-                }
-                    }catch (EOFException exc){
+                    if(resultSet==null){
                         Alert alert= new Alert(Alert.AlertType.ERROR);
-                        alert.setContentText("Programme code exceeded file limit");
+                        alert.setContentText("THIS PROGRAMME DOESN'T EXIST");
                         alert.showAndWait();
                     }
-            } catch (IOException exc) {
-                exc.printStackTrace();
-            }finally {
-                try {
-                    search.close();
-                }catch (IOException exc){
-
+                }catch (SQLException sql){
+                    System.out.println(sql.getErrorCode());
+                    sql.printStackTrace();
                 }
+            }catch (Exception e){
 
             }
+
         }catch (NumberFormatException exc){
             Alert alert= new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");
             alert.setContentText("Please input programme Code");
             alert.showAndWait();
         }
-
+            searchProgramme.close();
             return programme;
 
 

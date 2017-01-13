@@ -24,6 +24,11 @@ public class StudentMenuController {
     private MenuItem progressReport;
 
     private Stage studentMenu;
+    private int id;
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public void setStudentMenu(Stage studentMenu) {
         this.studentMenu = studentMenu;
@@ -39,23 +44,21 @@ public class StudentMenuController {
     @FXML
     public void handleProgrammeDetails() {
         Programme programme = new Programme();
-
-        programme.programmeDetails();
-
+        programme.programmeDetails(id);
     }
 
     @FXML
     public void handleAddCourse() {
-Student student= new Student();
-        student.studentAddCourse();
+        Student student= new Student();
+        student.studentAddCourse(id);
     }
     @FXML
     public void handleGenerateFees(){
         Student student= new Student();
-        student.generateFees();
+        student.generateFees(id);
     }
     @FXML public void handleGenerateProgressReport(){
         Student student= new Student();
-        student.generateProgressReport();
+        student.generateProgressReport(id);
     }
 }

@@ -39,22 +39,25 @@ public class StaffMenuController {
         mainApp.start(staffMenu);
     }
 @FXML private void handleNewProgramme(){
+        int code=0;
     Programme programme= new Programme();
     Course course= new Course();
-    int code;
-    code=programme.programmeForm();
-    if(code!=0){
-    course.addCourse(code);
+    if(code==0) {
+        code = programme.programmeForm();
+        course.addCourse(code);
     }
 }
 
-@FXML private void handleEditProgramme(){
-    Programme programme= new Programme();
-    int code;
-    Course course=new Course();
-    programme=programme.search();
-    code=programme.editProgramme(programme);
-    course.addCourse(code);
+@FXML private void handleEditProgramme() {
+    int code = 0;
+    Programme programme = new Programme();
+    Course course = new Course();
+
+        programme = programme.search();
+        code = programme.editProgramme(programme);
+    if (code != 0) {
+        course.addCourse(code);
+    }
 }
 @FXML private void handleGenerateStudentList(){
     Programme programme= new Programme();

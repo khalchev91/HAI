@@ -45,7 +45,6 @@ public class NewStaffController {
     Staff staff = new Staff();
         RandomAccessFile staffFile=null;
     if (isInputValid() && doesRecordExist()) {
-        System.out.println(doesRecordExist());
         staff.setId(Integer.parseInt(staffId.getText()));
         staff.setFirstName(staffFirstName.getText());
         staff.setLastName(staffLastName.getText());
@@ -54,10 +53,9 @@ public class NewStaffController {
         staff.setDateofEmployment(new Date(datePicker.getValue().getDayOfMonth(),datePicker.getValue().getMonthValue(),datePicker.getValue().getYear()));
         try {
             try {
-                staffFile = new RandomAccessFile(new File("staff.hai"), "rw");
-                staffFile.seek((Integer.parseInt(staffId.getText()) - 1) * staff.getRecordSize());
-
-                staffFile.writeInt(Integer.parseInt(staffId.getText()));
+            staffFile = new RandomAccessFile(new File("staff.hai"), "rw");
+            staffFile.seek((Integer.parseInt(staffId.getText()) - 1) * staff.getRecordSize());
+            staffFile.writeInt(Integer.parseInt(staffId.getText()));
             staffFile.writeUTF(staffFirstName.getText());
             staffFile.writeUTF(staffLastName.getText());
             staffFile.writeUTF(faculty.getText());

@@ -25,10 +25,19 @@ public class ProgressReportController {
     public ObservableList<Course> getCourseData() {
         return courseData;
     }
+    private int id;
 
-    @FXML private void handleSearchStudent() {
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    @FXML private void progressReport() {
         String courseName, description;
-        int id, courseCode, programmeCode, credit, preRequisite;
+        int courseCode, programmeCode, credit, preRequisite;
         float costPerCredit, courseCost;
         int seqId, seqCode;
         int studentId;
@@ -38,14 +47,12 @@ public class ProgressReportController {
         Student student = new Student();
         courseData.clear();
         courseTableView.setItems(getCourseData());
-        try {
-            studentId = Integer.parseInt(studentIdField.getText());
             try {
                 searchSeq = new Scanner(new File("student-course.hai"));
                 while (searchSeq.hasNext()) {
                     seqId = searchSeq.nextInt();
                     seqCode = searchSeq.nextInt();
-                    if (seqId == studentId) {
+                    if (seqId == getId()) {
                         try {
                             courseFile = new RandomAccessFile(new File("course.hai"), "r");
                             try {
@@ -86,13 +93,6 @@ public class ProgressReportController {
             } finally {
                 searchSeq.close();
             }
-
-
-        }catch (NumberFormatException nfe){
-            Alert alert= new Alert(Alert.AlertType.ERROR);
-            alert.setContentText("Please enter an integer");
-            alert.showAndWait();
-        }
     }
 
 

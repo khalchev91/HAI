@@ -60,6 +60,12 @@ public Person(Person person){
         this.lastName = lastName;
     }
 
+    public void initialize(){
+
+    }
+    public void initializeLogin(){
+
+    }
 
 
 

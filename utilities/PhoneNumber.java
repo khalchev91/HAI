@@ -1,5 +1,6 @@
 package HAI.utilities;
 
+import java.awt.print.PrinterJob;
 import java.io.Serializable;
 
 /**
@@ -31,6 +32,13 @@ public String toString(){
     string+=getExchange()+"-";
     string+=getLine();
     return string;
+}
+public PhoneNumber toPhoneNumber(String number){
+    PhoneNumber phoneNumber=new PhoneNumber();
+    phoneNumber.setAreaCode(number.substring(1,4));
+    phoneNumber.setExchange(number.substring(5,8));
+    phoneNumber.setLine(number.substring(9,13));
+    return phoneNumber;
 }
     public String getAreaCode() {
         return areaCode;

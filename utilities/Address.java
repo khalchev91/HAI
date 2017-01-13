@@ -23,11 +23,17 @@ public Address(Address address){
 }
     public String toString(){
         String string="";
-        string+=street+" \n";
-        string+=parish;
+        string+=getStreet()+"\n";
+        string+=getParish()+"\n";
         return string;
     }
-
+    public Address toAddress(String address){
+        Address address1= new Address();
+        String[] newLine=address.split("\n");
+        address1.setStreet(newLine[0]);
+        address1.setParish(newLine[1]);
+        return address1;
+    }
     public String getStreet() {
         return street;
     }

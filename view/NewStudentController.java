@@ -12,6 +12,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 import java.io.*;
+import java.sql.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,67 +55,72 @@ public class NewStudentController {
 
     @FXML
     private void handleNewStudent() {
-        if (isInputValid()&&doesRecordExist()) {
+        PreparedStatement statement=null;
+        Statement stment=null;
+        Connection connection=null;
+        if (isInputValid()) {
+                        Student student = new Student();
+                        student.setId(Integer.parseInt(studentIDField.getText()));
+                        student.setFirstName(firstNameField.getText());
+                        student.setLastName(lastNameField.getText());
+                        student.setEnrollmentStatus("0");
+                        student.setProgrammeCode(Integer.parseInt(programmeCodeField.getText()));
+                        student.setDateEnrolled(new Date(datePicker.getValue().getDayOfMonth(), datePicker.getValue().getMonthValue(), datePicker.getValue().getYear()));
+                        student.setContactNumber(new PhoneNumber(areaCodeField.getText(), exchangeField.getText(), lineField.getText()));
+                        student.setStudentAddress(new Address(streetField.getText(), parishField.getText()));
 
-            Student student = new Student();
-            Date date = null;
-            student.setId(Integer.parseInt(studentIDField.getText()));
-            student.setFirstName(firstNameField.getText());
-            student.setLastName(lastNameField.getText());
-            student.setEnrollmentStatus("0");
-            student.setProgrammeCode(Integer.parseInt(programmeCodeField.getText()));
-            student.setDateEnrolled(new Date(datePicker.getValue().getDayOfMonth(), datePicker.getValue().getMonthValue(), datePicker.getValue().getYear()));
-            student.setContactNumber(new PhoneNumber(areaCodeField.getText(), exchangeField.getText(), lineField.getText()));
-            student.setStudentAddress(new Address(streetField.getText(), parishField.getText()));
-            RandomAccessFile studentRecord = null;
             try {
-                try{
-                studentRecord = new RandomAccessFile(new File("student.hai"), "rw");
-                studentRecord.seek((student.getId() - 1) * student.getRecordSize());
-                    studentRecord.writeInt(student.getId());
-                    studentRecord.writeUTF(student.getFirstName());
-                    studentRecord.writeUTF(student.getLastName());
-                    studentRecord.writeUTF(student.getEnrollmentStatus());
-                    studentRecord.writeInt(student.getProgrammeCode());
-                    studentRecord.writeInt(student.getDateEnrolled().getDay());
-                    studentRecord.writeInt(student.getDateEnrolled().getMonth());
-                    studentRecord.writeInt(student.getDateEnrolled().getYear());
-                    studentRecord.writeUTF(student.getContactNumber().getAreaCode());
-                    studentRecord.writeUTF(student.getContactNumber().getExchange());
-                    studentRecord.writeUTF(student.getContactNumber().getLine());
-                    studentRecord.writeUTF(student.getStudentAddress().getStreet());
-                    studentRecord.writeUTF(student.getStudentAddress().getParish());
+               try {
+                   String host = "jdbc:sqlserver://KHALCHEV97;databaseName=HAI;integratedSecurity=true";
+                   Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+                   connection = DriverManager.getConnection(host);
 
-                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                    alert.setTitle("File updated");
-                    alert.setContentText("Record added to file");
-                    alert.showAndWait();
+                   statement = connection.prepareStatement("INSERT INTO uniStudent"+"(studentId,firstName,lastName,address,dateEnrolled,programmeCode,enrollmentStatus,contactNumber,password)"+"VALUES"+"(?,?,?,?,?,?,?,?,?)");
+                   statement.setInt(1, student.getId());
+                   statement.setString(2,student.getFirstName());
+                   statement.setString(3,student.getLastName());
+                   statement.setString(4,student.getStudentAddress().toString());
+                    statement.setString(5,student.getDateEnrolled().toString());
+                    statement.setInt(6,student.getProgrammeCode());
+                    statement.setString(7,student.getEnrollmentStatus());
+                    statement.setString(8,student.getContactNumber().toString());
+                    statement.setString(9,student.getPassword());
+                    statement.executeUpdate();
                     newStudent.close();
-                }catch (EOFException exc){
-                    Alert alert= new Alert(Alert.AlertType.ERROR);
-                    alert.setContentText("ID exceeded file limit");
-                    alert.showAndWait();
-                }
-            } catch (IOException exc) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("File Failure");
-                alert.setContentText("File failed to open");
-                alert.showAndWait();
-            } finally {
-                try {
-                    studentRecord.close();
-                } catch (IOException exc) {
-                    exc.printStackTrace();
-                }
-
+                } catch (SQLException sql) {
+                   System.out.println(sql.getErrorCode());
+                   if (sql.getErrorCode() == 2627) {
+                       Alert alert = new Alert(Alert.AlertType.ERROR);
+                       alert.setContentText("CANNOT INSERT DUPLICATE KEY");
+                       alert.showAndWait();
+                   } else if(sql.getErrorCode()==547){
+                       Alert alert = new Alert(Alert.AlertType.ERROR);
+                       alert.setContentText("THIS PROGRAMME DOES NOT EXIST: "+ student.getProgrammeCode());
+                       alert.showAndWait();
+                   }else {
+                       sql.printStackTrace();
+                   }
+               }
+           }catch (Exception exc){
+               exc.printStackTrace();
+           }finally {
+               try {
+               if(statement!=null) {
+                   statement.close();
+               }
+               } catch (SQLException e) {
+                       e.printStackTrace();
+                   }
+                   try{
+                   if(connection!=null){
+                       connection.close();
+                   }
+                   }catch (SQLException sql){
+                   sql.printStackTrace();
+                   }
             }
-
         }
     }
-
-
-
-
 
     private boolean isInputValid() {
         String errorMessage = "";
@@ -212,41 +218,6 @@ public class NewStudentController {
                 return false;
             }
         }
-    private boolean doesRecordExist(){
-        int id,studentId;
-        Student student= new Student();
-        RandomAccessFile studentFile=null;
-        id=Integer.parseInt(studentIDField.getText());
-        try{
-            try{
-            studentFile = new RandomAccessFile(new File("student.hai"),"r");
-            studentFile.seek((id-1)*student.getRecordSize());
-            studentId= studentFile.readInt();
-            if(studentId!=1){
-                Alert alert= new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Record already exists");
-                alert.setContentText("Record already exists.");
-                alert.initOwner(newStudent);
-                alert.showAndWait();
-                studentFile.close();
-                return false;
-            }else {
-                return true;
-            }
-            }catch (EOFException exc){
-                Alert alert= new Alert(Alert.AlertType.ERROR);
-                alert.setContentText("ID exceeded file limit");
-                alert.showAndWait();
-            }
-        }catch (IOException exc){
-            exc.printStackTrace();
-        }finally {
-            try{
-                studentFile.close();
-            }catch (IOException exc){
-                exc.printStackTrace();
-            }
-        }
-        return false;
     }
-    }
+
+

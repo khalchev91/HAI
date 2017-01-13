@@ -14,9 +14,14 @@ import javafx.stage.StageStyle;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * Created by Khalin on 10/22/2016.
+
  */
 public class Programme {
     private int programmeCode;
@@ -100,21 +105,30 @@ public class Programme {
     }
 
     public void initialize(){
+        Connection connection=null;
+        Statement statement=null;
         try {
-            RandomAccessFile programmeFile = new RandomAccessFile(new File("programme.hai"), "rw");
-            for(int count=1000;count<1020;count++){
-                programmeFile.seek((count-1)*sizeOfRecord());
-                programmeFile.writeInt(getProgrammeCode());
-                programmeFile.writeUTF(getProgrammeName());
-                programmeFile.writeInt(getMaxNumberOfCourses());
-                programmeFile.writeUTF(getAward());
-                programmeFile.writeUTF(getAccreditation());
+            try {
+                String programmeTable="CREATE TABLE Programme"+
+                        "(ProgrammeCode  INTEGER  PRIMARY KEY ," +
+                        "programmeName   VARCHAR(255)," +
+                        "maximumNumberOfCourses   VARCHAR(255)," +
+                        "Award  VARCHAR(255)," +
+                        "Accreditation     VARCHAR(255))";
+
+                String host = "jdbc:sqlserver://KHALCHEV97;databaseName=HAI;integratedSecurity=true";
+                Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+                connection = DriverManager.getConnection(host);
+                statement= connection.createStatement();
+
+                statement.execute(programmeTable);
+            }catch (SQLException sql){
+                    //
             }
-            programmeFile.close();
-        }catch(IOException exc){
-
-
+        }catch (Exception e){
+            //
         }
+
 
     }
     public long sizeOfRecord(){
@@ -125,7 +139,6 @@ public int programmeForm(){
     Stage newProgramme= new Stage();
     int code=0;
     try{
-
         FXMLLoader loader= new FXMLLoader(getClass().getResource("../view/NewProgramme.fxml"));
         AnchorPane form= loader.load();
         newProgramme.setTitle("New Programme");
@@ -134,17 +147,16 @@ public int programmeForm(){
 
         NewProgrammeController controller= loader.getController();
         controller.setProgrammeForm(newProgramme);
-
         newProgramme.showAndWait();
-        code= controller.handleNewProgramme();
-    }catch(IOException exc){
+        code=controller.getProgrammeCode();
+            } catch(IOException exc){
         exc.printStackTrace();
     }
     return code;
 }
 public int editProgramme(Programme programme){
     Stage edit= new Stage();
-    int code=0;
+
     try{
         FXMLLoader loader= new FXMLLoader(getClass().getResource("../view/EditProgrammeDetails.fxml"));
         AnchorPane form= loader.load();
@@ -154,14 +166,13 @@ public int editProgramme(Programme programme){
         EditProgrammeController controller= loader.getController();
         controller.setEditForm(edit);
         controller.setProgramme(programme);
-
-
         edit.showAndWait();
-        code= controller.handleSave();
+        controller.handleSave();
+
     }catch (IOException exc){
         exc.printStackTrace();
     }
-    return code;
+    return programme.getProgrammeCode();
 }
 public Programme search(){
     Programme programme= null;
@@ -201,7 +212,7 @@ public void generateStudentList(){
         exc.printStackTrace();
     }
 }
-public void programmeDetails(){
+public void programmeDetails(int studentID){
     Stage viewProgrammeDetails= new Stage();
     try{
         FXMLLoader loader= new FXMLLoader(getClass().getResource("../view/ProgrammeDetails.fxml"));
@@ -211,6 +222,7 @@ public void programmeDetails(){
         ViewProgrammeDetailsController controller= loader.getController();
         controller.getProgrammeInfo();
         viewProgrammeDetails.setScene(new Scene(details));
+        controller.setId(studentID);
         viewProgrammeDetails.showAndWait();
     }catch (IOException exc){
         exc.printStackTrace();

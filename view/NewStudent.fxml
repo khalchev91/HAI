@@ -65,12 +65,12 @@
                <children>
                   <TextField fx:id="areaCodeField" promptText="Area Code" />
                   <TextField fx:id="exchangeField" promptText="Exchange" GridPane.columnIndex="1" />
-                  <TextField fx:id="lineField" promptText="Line Number" GridPane.columnIndex="2" />
+                  <TextField fx:id="lineField" onKeyPressed="#handleNewStudent" promptText="Line Number" GridPane.columnIndex="2" />
                </children>
             </GridPane>
             <DatePicker fx:id="datePicker" GridPane.columnIndex="1" GridPane.rowIndex="4" />
          </children>
       </GridPane>
-      <Button fx:id="addStudentButton" layoutX="228.0" layoutY="362.0" mnemonicParsing="false" onAction="#handleNewStudent" prefHeight="24.0" prefWidth="121.0" text="Add Student" />
+      <Button fx:id="addStudentButton" layoutX="228.0" layoutY="362.0" mnemonicParsing="false" onAction="#handleNewStudent" onKeyPressed="#handleNewStudent" prefHeight="24.0" prefWidth="121.0" text="Add Student" />
    </children>
 </AnchorPane>

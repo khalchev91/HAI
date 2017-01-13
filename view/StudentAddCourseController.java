@@ -8,6 +8,10 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
 import java.io.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Scanner;
 
 /**
@@ -26,101 +30,79 @@ public class StudentAddCourseController {
         return courseObservableList;
     }
 
-    @FXML private void populateTable() {
-        int id,code,courseCode,programmeCode,courseCodeProgramme,prerequisite,credit;
-        float costPerCredit,courseCost;
-        Student student= new Student();
-        Course course= new Course();
-        String firstName,lastName,enrollmentStatus,courseName,description;
-        RandomAccessFile studentFile= null;
-        RandomAccessFile courseFile=null;
-        Scanner seqStudentFile=null;
+    private int id;
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    @FXML private void populate() {
+
+        Student student = new Student();
+        Course course = new Course();
+        Connection connection = null;
+        PreparedStatement statement = null;
         courseObservableList.clear();
         courseTableView.setItems(getCourseObservableList());
         try {
-            int studentID = Integer.parseInt(studentIdField.getText());
-                try{
-                    seqStudentFile= new Scanner(new File("course-programme.hai"));
-                    studentFile= new RandomAccessFile(new File("student.hai"),"r");
-                    courseFile= new RandomAccessFile(new File("course.hai"),"r");
-                    studentFile.seek((studentID-1)*student.getRecordSize());
-                    id=studentFile.readInt();
-                    firstName=studentFile.readUTF();
-                    lastName=studentFile.readUTF();
-                    enrollmentStatus= studentFile.readUTF();
-                    code=studentFile.readInt();
-                    while (seqStudentFile.hasNext()){
-                        courseCodeProgramme =seqStudentFile.nextInt();
-                        programmeCode=seqStudentFile.nextInt();
-                        if(code==programmeCode) {
-                            try {
-                                courseFile.seek((courseCodeProgramme - 1) * course.getRecordSize());
-                                courseCode = courseFile.readInt();
-                                courseName = courseFile.readUTF();
-                                description = courseFile.readUTF();
-                                credit = courseFile.readInt();
-                                prerequisite = courseFile.readInt();
-                                costPerCredit = courseFile.readFloat();
-                                courseCost=courseFile.readFloat();
-                                course = new Course(courseCode, courseName, description, credit, prerequisite, costPerCredit,courseCost);
-                                courseObservableList.add(course);
-                                courseTableView.setItems(getCourseObservableList());
-                            }catch (EOFException eof){
-                                //
-                            }
-                        }
-                    }
-                }catch (IOException exc){
-                    //
-                }finally {
-                    try {
-                        studentFile.close();
-                        courseFile.close();
-                    }catch (IOException exc){
-                seqStudentFile.close();
-                    }
+            try {
+                Class.forName("com.mysql.jdbc.Driver").newInstance();
+                String host = "jdbc:mysql://localhost:3306"+ "user=root&password=khalin1549";
+                connection = DriverManager.getConnection(host);
+                String sqlCode="";
+                courseObservableList.add(course);
+                courseTableView.setItems(getCourseObservableList());
+            } catch (SQLException sql) {
+                System.out.println(sql.getErrorCode());
+            }
+        } catch (Exception e) {
+            //
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException sql) {
+                        //
                 }
-            }catch (NumberFormatException nfe){
-            Alert alert= new Alert(Alert.AlertType.ERROR);
-            alert.setContentText("Please enter a number");
-            alert.showAndWait();
+            }if(statement!=null){
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    /**e.printStackTrace();
+                **/
+                     }
+            }
         }
     }
 
    @FXML private void handleAdd() {
     Course course= courseTableView.getSelectionModel().getSelectedItem();
        FileWriter courseFile= null;
-       try {
+           if (course != null && checkIfExist(id, course.getCourseCode())) {
            try {
-               if(course!=null) {
-                   int id = Integer.parseInt(studentIdField.getText());
                    courseFile = new FileWriter("student-course.hai", true);
                    courseFile.write(id + "\t" + course.getCourseCode() + "\n");
-               }
-           }catch (IOException exc){
-               //
-           }finally {
-               try {
-                   courseFile.close();
-               }catch (IOException exc){
+
+               }catch(IOException exc){
                    //
+               }finally{
+                   try {
+                       courseFile.close();
+                   } catch (IOException exc) {
+                       //
+                   }
                }
            }
-       }catch (NumberFormatException nfe){
-           Alert alert= new Alert(Alert.AlertType.ERROR);
-           alert.setContentText("Please enter a number");
-           alert.showAndWait();
-       }
    }
-    public boolean checkIfExist(int programmeCodeCheck,int courseCodeCheck){
-        int courseCode,programmeCode;
+    public boolean checkIfExist(int studentId,int courseCodeCheck){
+        int id,courseCode;
         Scanner seqCourse= null;
         try {
-            seqCourse= new Scanner(new File("course-programme.hai"));
+            seqCourse= new Scanner(new File("student-course.hai"));
             while (seqCourse.hasNext()){
-                courseCode=seqCourse.nextInt();
-                programmeCode= seqCourse.nextInt();
-                if(courseCode==courseCodeCheck&&programmeCodeCheck==programmeCode){
+                id=seqCourse.nextInt();
+                courseCode= seqCourse.nextInt();
+                if(id==studentId&&courseCode==courseCodeCheck){
                     Alert alert= new Alert(Alert.AlertType.ERROR);
                     alert.setContentText("This course already exists in that programme");
                     alert.showAndWait();

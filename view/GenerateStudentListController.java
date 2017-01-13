@@ -20,6 +20,7 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.sql.*;
 
 /**
  * Created by Khalin on 11/4/2016.
@@ -46,7 +47,6 @@ public class GenerateStudentListController {
         this.programme = programme;
     }
 
-    private Student student;
 
 
 
@@ -57,45 +57,64 @@ public class GenerateStudentListController {
 
 
     @FXML void handleOk(){
-        int id,day,month,year,code;
-        int programmeCode= Integer.parseInt(programmeCodeField.getText());
-        String firstName,lastName,areaCode,exchange,line,street,parish,password,status;
-        Student student= new Student(0,"","","",0,new Address(),new PhoneNumber(),new Date());
+        Connection connection= null;
+        PreparedStatement statement= null;
+        Programme programme= new Programme();
+        Student student= new Student();
         studentInfo.clear();
         studentTableView.setItems(getStudentInfo());
         try {
-            RandomAccessFile studentFile = new RandomAccessFile(new File("student.hai"), "rw");
+            int code= Integer.parseInt(programmeCodeField.getText());
             try {
-                for (int count = 1600; count < 1630; count++) {
-                    studentFile.seek((count - 1) * student.getRecordSize());
-                    id = studentFile.readInt();
-                    firstName = studentFile.readUTF();
-                    lastName = studentFile.readUTF();
-                    status = studentFile.readUTF();
-                    code = studentFile.readInt();
-                    day = studentFile.readInt();
-                    month = studentFile.readInt();
-                    year = studentFile.readInt();
-                    areaCode = studentFile.readUTF();
-                    exchange = studentFile.readUTF();
-                    line = studentFile.readUTF();
-                    street = studentFile.readUTF();
-                    parish = studentFile.readUTF();
+                try {
 
-                    if (programmeCode == code&&id!=1) {
-                        student = new Student(id, firstName, lastName, status, code, new Address(street, parish), new PhoneNumber(areaCode, exchange, line), new Date(day, month, year));
-                         studentInfo.add(new Student(student));
+                    String host = "jdbc:sqlserver://KHALCHEV97;databaseName=HAI;integratedSecurity=true";
+                    Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+                    connection = DriverManager.getConnection(host);
+                    String stement="SELECT *FROM uniStudent "+" WHERE programmeCode=?";
+                    statement= connection.prepareStatement(stement);
+                    statement.setInt(1,code);
+                    ResultSet resultSet=statement.executeQuery();
+                    while (resultSet.next()) {
+                        student.setId(resultSet.getInt("studentId"));
+                        student.setFirstName(resultSet.getString("firstName"));
+                        student.setLastName(resultSet.getString("lastName"));
+                        student.setProgrammeCode(resultSet.getInt("programmeCode"));
+                        student.setContactNumber(new PhoneNumber().toPhoneNumber(resultSet.getString("contactNumber")));
+                        student.setEnrollmentStatus(resultSet.getString("enrollmentStatus"));
+                        student.setStudentAddress(new Address().toAddress(resultSet.getString("address")));
+                        student.setDateEnrolled(new Date().toDate(resultSet.getString("dateEnrolled")));
+                        student.setPassword(resultSet.getString("password"));
+                        System.out.println(student);
+                        studentInfo.add(new Student(student));
                         studentTableView.setItems(getStudentInfo());
                     }
+                }catch (SQLException sql){
+                    System.out.println(sql.getErrorCode());
+                    sql.printStackTrace();
                 }
-
-            } catch (EOFException eofc) {
-
-            } finally {
-                studentFile.close();
+            }catch (Exception e){
+                //
+            }finally {
+                try {
+                    if(statement!=null) {
+                        statement.close();
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                try{
+                    if(connection!=null){
+                        connection.close();
+                    }
+                }catch (SQLException sql){
+                    sql.printStackTrace();
+                }
             }
-        }catch (IOException exc){
-            exc.printStackTrace();
+        }catch (NumberFormatException nfe){
+            Alert alert= new Alert(Alert.AlertType.ERROR);
+            alert.setContentText("Please enter a number not a string!!!!");
+            alert.showAndWait();
         }
         if(studentInfo.isEmpty()){
             Alert alert= new Alert(Alert.AlertType.ERROR);
@@ -103,6 +122,7 @@ public class GenerateStudentListController {
             alert.showAndWait();
             programmeCodeField.clear();
         }
+
     }
     @FXML void handleCancel(){
         generateStudentList.close();

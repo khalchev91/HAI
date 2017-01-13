@@ -8,16 +8,28 @@
 
 <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="HAI.view.AddCourseToProgrammeController">
    <children>
-      <TableView fx:id="courseTableView" layoutX="78.0" layoutY="24.0" prefHeight="278.0" prefWidth="444.0">
+      <TableView fx:id="courseTableView" layoutX="-4.0" prefHeight="366.0" prefWidth="281.0">
         <columns>
-          <TableColumn fx:id="courseColumn" prefWidth="185.0" text="Course Code">
+          <TableColumn fx:id="courseColumn" prefWidth="89.0" text="Course Code">
               <cellValueFactory><PropertyValueFactory property="courseCode" /></cellValueFactory>
           </TableColumn>
-          <TableColumn fx:id="courseNameColumn" prefWidth="258.0" text="Course Name">
+          <TableColumn fx:id="courseNameColumn" prefWidth="225.0" text="Course Name">
               <cellValueFactory><PropertyValueFactory property="courseName" /></cellValueFactory>
           </TableColumn>
         </columns>
       </TableView>
-      <Button fx:id="addToProgramme" layoutX="232.0" layoutY="331.0" mnemonicParsing="false" onAction="#handleAdd" text="Add Course" />
+      <Button fx:id="addToProgramme" layoutX="288.0" layoutY="75.0" mnemonicParsing="false" onAction="#handleAdd" text="&gt;" />
+      <Button fx:id="removeCourse" layoutX="288.0" layoutY="125.0" mnemonicParsing="false" onAction="#handleDelete" text="&lt;" />
+      <TableView fx:id="addedCourseTableView" layoutX="329.0" layoutY="-3.0" prefHeight="366.0" prefWidth="272.0">
+        <columns>
+          <TableColumn fx:id="courseCodeColumn" prefWidth="75.0" text="Course Code">
+              <cellValueFactory><PropertyValueFactory property="courseCode" /></cellValueFactory>
+          </TableColumn>
+          <TableColumn fx:id="addedCourseNameColumn" prefWidth="196.0" text="Course Name">
+              <cellValueFactory><PropertyValueFactory property="courseName" /></cellValueFactory>
+          </TableColumn>
+        </columns>
+      </TableView>
+      <Button fx:id="populateButton" layoutX="275.0" layoutY="363.0" mnemonicParsing="false" onAction="#populate" text="Populate" />
    </children>
 </AnchorPane>

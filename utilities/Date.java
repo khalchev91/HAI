@@ -33,6 +33,18 @@ public class Date {
        record+=getYear();
        return record;
    }
+   public Date toDate(String day){
+        Date date= new Date();
+        String[]days=day.split("/");
+        try {
+            date.setDay(Integer.parseInt(days[0]));
+            date.setMonth(Integer.parseInt(days[1]));
+            date.setYear(Integer.parseInt(days[2]));
+        }catch (NumberFormatException nfe){
+            nfe.printStackTrace();
+        }
+        return date;
+   }
     public int getDay() {
         return day;
     }

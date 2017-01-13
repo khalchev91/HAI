@@ -8,6 +8,10 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 import java.io.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,36 +43,52 @@ public class NewCourseController {
 
     @FXML
     void handleAddCourse() {
-        Course course= new Course();
-        if (isInputValid()&&doesRecordExist()) {
-            RandomAccessFile courseFile=null;
+        Course course = new Course();
+        Connection connection = null;
+        PreparedStatement statement = null;
+        if (isInputValid()) {
+                try{
+                    course.setCourseCode(Integer.parseInt(courseCodeField.getText()));
+                    course.setCourseName(courseNameField.getText());
+                    course.setDescription(descriptionField.getText());
+                    course.setPrerequisite(Integer.parseInt(prerequisiteField.getText()));
+                    course.setCredit(Integer.parseInt(creditField.getText()));
+                    course.setCostPerCredit(Float.parseFloat(costPerCreditField.getText()));
+                    course.setCourseCost(course.getCostPerCredit()*course.getCredit());
+                }catch (NumberFormatException nfe){
+                    //
+                }
+
             try {
-                courseFile = new RandomAccessFile(new File("course.hai"), "rw");
                 try {
-                    courseFile.seek((Integer.parseInt(courseCodeField.getText()) - 1) * course.getRecordSize());
-                    courseFile.writeInt(Integer.parseInt(courseCodeField.getText()));
-                    courseFile.writeUTF(courseNameField.getText());
-                    courseFile.writeUTF(descriptionField.getText());
-                    courseFile.writeInt(Integer.parseInt(creditField.getText()));
-                    courseFile.writeInt(Integer.parseInt(prerequisiteField.getText()));
-                    courseFile.writeFloat(Float.parseFloat(costPerCreditField.getText()));
-                    courseFile.writeFloat((Integer.parseInt(creditField.getText())) * (Float.parseFloat(costPerCreditField.getText())));
-                } catch (IOException exc) {
-                    exc.printStackTrace();
-                } finally {
-                    try {
-                        courseFile.close();
-                    } catch (IOException exc) {
-                        exc.printStackTrace();
+                    String host = "jdbc:sqlserver://KHALCHEV97;databaseName=HAI;integratedSecurity=true";
+                    Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+                    connection = DriverManager.getConnection(host);
+                    statement= connection.prepareStatement("INSERT INTO course"+ "(courseCode,courseName,courseDescription,credits,costPerCredit,coursePreRequisite,courseCost)"+"VALUES (?,?,?,?,?,?,?)");
+                    statement.setInt(1,course.getCourseCode());
+                    statement.setString(2,course.getCourseName());
+                    statement.setString(3,course.getDescription());
+                    statement.setInt(4,course.getCredit());
+                    statement.setFloat(5,course.getCostPerCredit());
+                    statement.setInt(6,course.getPrerequisite());
+                    statement.setFloat(7,course.getCourseCost());
+                    statement.executeUpdate();
+                    courseForm.close();
+                } catch (SQLException sql) {
+                    if (sql.getErrorCode() == 2627) {
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setContentText("Course already exists");
+                        alert.showAndWait();
+                    } else {
+                        System.out.println(sql.getErrorCode());
+                        sql.printStackTrace();
                     }
                 }
-            }catch (FileNotFoundException e){
+            }catch (Exception e){
                 e.printStackTrace();
             }
-        courseForm.close();
+        }
     }
-
-}
 
     private boolean isInputValid(){
         String errorMessage="";
@@ -143,37 +163,5 @@ public class NewCourseController {
             alert.showAndWait();
             return false;
         }
-    }
-    private boolean doesRecordExist(){
-        int code,courseCode;
-        Course course= new Course();
-        RandomAccessFile courseFile=null;
-        code=Integer.parseInt(courseCodeField.getText());
-        try{
-            courseFile = new RandomAccessFile(new File("course.hai"),"r");
-            courseFile.seek((code-1)*course.getRecordSize());
-            courseCode= courseFile.readInt();
-            if(courseCode!=1){
-                Alert alert= new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Record already exists");
-                alert.setContentText("Record already exists.");
-                alert.initOwner(courseForm);
-                alert.showAndWait();
-                courseFile.close();
-                return false;
-            }else {
-                return true;
-            }
-
-        }catch (IOException exc){
-            exc.printStackTrace();
-        }finally {
-            try{
-                courseFile.close();
-            }catch (IOException exc){
-                exc.printStackTrace();
-            }
-        }
-        return false;
     }
 }

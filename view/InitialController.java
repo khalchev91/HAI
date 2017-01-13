@@ -25,25 +25,21 @@ Stage initWindow= new Stage();
     }
     @FXML
     private void handleNewStaff(){
-        mainApp.login("Administration login");
         Staff staff= new Staff();
         staff.newStaffForm();
     }
     @FXML
     private void handleStaffLogin(){
         Staff staff= new Staff();
-        mainApp.login("Staff Login");
         initWindow.close();
         staff.staffMenu();
-
     }
 
     @FXML
     private void handleStudentLogin(){
         Student student= new Student();
-        mainApp.login("Student Login");
             initWindow.close();
-            student.studentMenu();
+          //  student.studentMenu();
         }
     }
 

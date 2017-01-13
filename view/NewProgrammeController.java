@@ -10,8 +10,13 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 import java.io.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.Inflater;
 
 /**
  * Created by Khalin on 10/27/2016.
@@ -30,37 +35,57 @@ public class NewProgrammeController {
     public void setProgrammeForm(Stage programmeForm) {
         this.programmeForm = programmeForm;
     }
+    private int programmeCode;
+
+
+    public int getProgrammeCode() {
+        return programmeCode;
+    }
 
     @FXML
-    public int handleNewProgramme(){
+    public void handleNewProgramme(){
+        Connection connection=null;
+        PreparedStatement statement=null;
         Programme programme= new Programme();
-        int code=0;
+
         RandomAccessFile programmeFile=null;
-        if (isInputValid()&& doesRecordExist()) {
+        if (isInputValid()) {
         try {
-            programmeFile=new RandomAccessFile(new File("programme.hai"),"rw");
-            programmeFile.seek((Integer.parseInt(codeField.getText())-1)*programme.sizeOfRecord());
-            programmeFile.writeInt(Integer.parseInt(codeField.getText()));
-            programmeFile.writeUTF(nameField.getText());
-            programmeFile.writeInt(Integer.parseInt(numberOfCoursesField.getText()));
-            programmeFile.writeUTF(awardField.getText());
-            programmeFile.writeUTF(accreditationField.getText());
-            programmeForm.close();
-            return Integer.parseInt(codeField.getText());
-    }catch(IOException exc){
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("File failure");
-        alert.setContentText("File failed to open");
-    }finally {
+            programme.setProgrammeCode(Integer.parseInt(codeField.getText()));
+            programme.setProgrammeName(nameField.getText());
+            programme.setMaxNumberOfCourses(Integer.parseInt(numberOfCoursesField.getText()));
+            programme.setAward(awardField.getText());
+            programme.setAccreditation(accreditationField.getText());
+        }catch (NumberFormatException nfe){
+            //
+        }
+        try {
             try {
-                programmeFile.close();
-            }catch (IOException exc){
-                //
+                String host = "jdbc:sqlserver://KHALCHEV97;databaseName=HAI;integratedSecurity=true";
+                Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+                connection = DriverManager.getConnection(host);
+                statement=connection.prepareStatement("INSERT INTO Programme"+ "(ProgrammeCode,programmeName,maximumNumberOfCourses,Award,Accreditation)"+ "VALUES(?,?,?,?,?)");
+                statement.setInt(1,programme.getProgrammeCode());
+                statement.setString(2,programme.getProgrammeName());
+                statement.setInt(3,programme.getMaxNumberOfCourses());
+                statement.setString(4,programme.getAward());
+                statement.setString(5,programme.getAccreditation());
+                statement.executeUpdate();
+            } catch (SQLException sql) {
+                if(sql.getErrorCode()==2627){
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setContentText("could not add record as it already exists");
+                    alert.showAndWait();
+                }else{
+                    sql.printStackTrace();
+                }
             }
+        }catch (Exception e){
+            //
         }
 
 }
-return code;
+
 
 }
 private boolean isInputValid(){
@@ -117,38 +142,4 @@ private boolean isInputValid(){
         return false;
     }
 }
-
-    private boolean doesRecordExist(){
-        int id,programmeCode;
-        Programme programme= new Programme();
-        RandomAccessFile programmeFile=null;
-        id=Integer.parseInt(codeField.getText());
-        try{
-            programmeFile = new RandomAccessFile(new File("programme.hai"),"r");
-            programmeFile.seek((id-1)*programme.sizeOfRecord());
-            programmeCode= programmeFile.readInt();
-            System.out.println(programmeCode);
-            if(programmeCode!=1){
-                Alert alert= new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Record already exists");
-                alert.setContentText("Record already exists.");
-                alert.initOwner(programmeForm);
-                alert.showAndWait();
-                programmeFile.close();
-                return false;
-            }else {
-                return true;
-            }
-
-        }catch (IOException exc){
-            exc.printStackTrace();
-        }finally {
-            try{
-                programmeFile.close();
-            }catch (IOException exc){
-                exc.printStackTrace();
-            }
-        }
-        return false;
-    }
 }

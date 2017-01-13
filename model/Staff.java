@@ -24,8 +24,6 @@ import java.io.Serializable;
  */
 public class Staff extends Person {
 
-
-
 	private String department;
     private String faculty;
     private Date dateofEmployment;
@@ -96,6 +94,7 @@ public String toString(){
     public void setDateofEmployment(Date dateofEmployment) {
         this.dateofEmployment = dateofEmployment;
     }
+   @Override
     public void initialize(){
         RandomAccessFile staffFile= null;
         try {
@@ -161,13 +160,14 @@ public void staffMenu(){
         exc.printStackTrace();
     }
 }
+@Override
     public void initializeLogin(){
         RandomAccessFile loginFile= null;
         try {
             loginFile= new RandomAccessFile(new File("staffLogin.hai"),"rw");
             for(int count=2000;count<2030;count++){
                 loginFile.seek((count-1)*(4+(25*2)));
-                loginFile.writeInt(getId());
+                loginFile.writeInt(count);
                 loginFile.writeUTF(getStaffPassword());
             }
         }catch (IOException exc){
