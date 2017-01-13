@@ -9,10 +9,15 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * Created by Khalin on 10/22/2016.
@@ -140,33 +145,51 @@ public String toString(){
     }
 }
 public void initialize(){
-    RandomAccessFile courseFile= null;
+    Connection connection=null;
+    Statement statement=null;
     try{
-courseFile= new RandomAccessFile(new File("course.hai"),"rw");
-        for(int count=2500; count<2530; count++){
-            courseFile.seek((count-1)*getRecordSize());
-            courseFile.writeInt(getCourseCode());
-            courseFile.writeUTF(getCourseName());
-            courseFile.writeUTF(getDescription());
-            courseFile.writeInt(getCredit());
-            courseFile.writeInt(getPrerequisite());
-            courseFile.writeFloat(getCostPerCredit());
-            courseFile.writeFloat(getCourseCost());
-        }
-    }catch (IOException exc){
-        exc.printStackTrace();
-    }finally {
         try{
-            courseFile.close();
-        }catch (IOException exc){
-            exc.printStackTrace();
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            String host = "jdbc:sqlserver://KHALCHEV97;databaseName=HAI;integratedSecurity=true";
+            connection= DriverManager.getConnection(host);
+            String courseTable="CREATE TABLE course "+
+                    "(courseCode  INTEGER PRIMARY KEY, " +
+                    "courseName  VARCHAR(255), " +
+                    "courseDescription VARCHAR(255), " +
+                    "credits  INTEGER, " +
+                    "costPerCredit  FLOAT, " +
+                    "coursePreRequisite  INTEGER, " +
+                    "courseCost  VARCHAR(255))";
+            statement= connection.createStatement();
+            statement.execute(courseTable);
+        }catch (SQLException sql){
+            sql.printStackTrace();
+            System.out.println(sql.getErrorCode());
+        }
+    }catch (Exception e){
+        e.printStackTrace();
+    }finally {
+        try {
+            if (statement != null) {
+                statement.close();
+            }
+        } catch (SQLException exc) {
+            //
+        }
+        try {
+            if (connection != null) {
+                connection.close();
+            }
+        } catch (SQLException exc) {
+            //
         }
     }
+
 }
     public long getRecordSize(){
         return (long)(4+4+4+4+4+((25+25)*2));
     }
-public void addCourse(int code){
+public void addCourse(int programmeCode){
     Stage addCourse= new Stage();
     try{
         FXMLLoader loader= new FXMLLoader(getClass().getResource("../view/AddCoursetoProgramme.fxml"));
@@ -175,37 +198,60 @@ public void addCourse(int code){
         addCourse.setScene(new Scene(course));
         addCourse.initStyle(StageStyle.UTILITY);
         AddCourseToProgrammeController controller=loader.getController();
-        addCourse.showAndWait();
-        controller.setProgrammeCode(code);
+        addCourse.show();
+        controller.setProgrammeCode(programmeCode);
     }catch (IOException exc){
         exc.printStackTrace();
     }
 }
-public void createFile(){
-    FileWriter courseProgramme= null;
-    FileWriter courseStudent=null;
+public void createFile() {
+    Connection connection = null;
+    Statement statement = null;
     try {
-        courseProgramme= new FileWriter("course-programme.hai",true);
-    }catch (IOException exc){
-        //
+        try {
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            String host = "jdbc:sqlserver://KHALCHEV97;databaseName=HAI;integratedSecurity=true";
+            connection = DriverManager.getConnection(host);
+            String courseProgrammeTable="CREATE TABLE CoursesProgramme" +
+                    "(CourseCode   INTEGER, " +
+                    "ProgrammeCode  INTEGER, " +
+                    "FOREIGN KEY(CourseCode)" +
+                    "REFERENCES Course(courseCode)," +
+                    "FOREIGN KEY (ProgrammeCode)" +
+                    "REFERENCES Programme(programmeCode))";
+            String studentCourseTable="CREATE TABLE StudentCourse" +
+                    "(StudentId   INTEGER, " +
+                    "CourseCode     INTEGER, " +
+                    "FOREIGN KEY(StudentId) " +
+                    "REFERENCES uniStudent(studentId), " +
+                    "FOREIGN KEY CourseCode " +
+                    "REFERENCES Course(courseCode))";
+            statement= connection.createStatement();
+            //statement.execute(courseProgrammeTable);
+            statement.execute(studentCourseTable);
+        }catch (SQLException sql){
+            System.out.println(sql.getErrorCode());
+            sql.printStackTrace();
+        }
+    }catch (Exception e){
+        e.printStackTrace();
     }finally {
         try {
-            courseProgramme.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+            if (statement != null) {
+                statement.close();
+            }
+        } catch (SQLException exc) {
+            //
         }
-    }
-    try {
-        courseStudent= new FileWriter("student-course.hai",true);
-    } catch (IOException e) {
-        e.printStackTrace();
-    } finally {
         try {
-            courseStudent.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+            if (connection != null) {
+                connection.close();
+            }
+        } catch (SQLException exc) {
+            //
         }
     }
 }
+
 
 }
